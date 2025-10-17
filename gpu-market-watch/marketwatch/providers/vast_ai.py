@@ -5,18 +5,22 @@ from datetime import datetime
 from typing import List
 
 from ..schema import GpuPrice, validate_and_normalize
-from ..util import log, parse_float
+from ..util import load_json_snapshot, log, parse_float
 
 
 def fetch(session, cfg, now: datetime) -> List[GpuPrice]:
     url = cfg.extra.get("base_url", "https://api.vast.ai/v0/bundles/public")
+    payload = None
     try:
         response = session.get(url)
         response.raise_for_status()
         payload = response.json()
     except Exception as exc:  # pragma: no cover - defensive
         log("WARN", f"vast_ai: failed to fetch pricing ({exc})")
-        return []
+        payload = load_json_snapshot(cfg.id)
+        if payload is None:
+            return []
+        log("INFO", "vast_ai: using bundled snapshot data")
 
     offers = payload.get("offers") or payload.get("data") or []
     results: List[GpuPrice] = []

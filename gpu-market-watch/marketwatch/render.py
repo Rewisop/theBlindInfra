@@ -5,9 +5,12 @@ import json
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional
 
-import pandas as pd
+try:  # pragma: no cover - optional dependency
+    import pandas as pd  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    pd = None  # type: ignore[assignment]
 
 from .config import DashboardConfig, project_path
 from .schema import GpuPrice
@@ -15,32 +18,27 @@ from .util import log
 
 
 def generate_report(prices: Iterable[GpuPrice], history_path: Optional[Path] = None) -> str:
-    prices = list(prices)
-    df = pd.DataFrame([p.model_dump() for p in prices])
+    records = [p.model_dump() if isinstance(p, GpuPrice) else dict(p) for p in prices]
     summary_lines = ["# GPU Market Daily Report", ""]
     generated_at = datetime.utcnow().isoformat()
     summary_lines.append(f"Generated at: `{generated_at}`\n")
-    summary_lines.append(f"Total providers: **{df['provider_id'].nunique() if not df.empty else 0}**")
-    summary_lines.append(f"Total offers: **{len(df)}**\n")
+    providers = sorted({row.get("provider_id") for row in records if row.get("provider_id")})
+    summary_lines.append(f"Total providers: **{len(providers)}**")
+    summary_lines.append(f"Total offers: **{len(records)}**\n")
 
-    if not df.empty:
-        cheapest = df.sort_values("usd_per_hour").groupby("gpu", as_index=False).first()
-        summary_lines.append("## Cheapest per GPU\n")
-        summary_lines.append(cheapest[["gpu", "usd_per_hour", "provider_id", "region", "sku"]].to_markdown(index=False))
-        summary_lines.append("")
+    if records:
+        summary_lines.extend(_render_cheapest_section(records))
 
         previous = _load_previous_snapshot(history_path)
-        if previous is not None and previous:
-            prev_df = pd.DataFrame(previous)
-            movers = _compute_movers(prev_df, df)
-            if not movers.empty:
+        if previous:
+            movers_table = _render_movers(previous, records)
+            if movers_table:
                 summary_lines.append("## Top Movers vs Previous\n")
-                summary_lines.append(movers.to_markdown(index=False))
+                summary_lines.append(movers_table)
                 summary_lines.append("")
 
-        coverage = df.groupby("provider_id").size().reset_index(name="offers")
         summary_lines.append("## Provider Coverage\n")
-        summary_lines.append(coverage.to_markdown(index=False))
+        summary_lines.append(_render_provider_coverage(records))
         summary_lines.append("")
 
     if history_path and history_path.exists():
@@ -52,7 +50,82 @@ def generate_report(prices: Iterable[GpuPrice], history_path: Optional[Path] = N
     return "\n".join(summary_lines).strip() + "\n"
 
 
-def _compute_movers(prev_df: pd.DataFrame, current_df: pd.DataFrame) -> pd.DataFrame:
+def _render_cheapest_section(records: List[dict]) -> List[str]:
+    section: List[str] = ["## Cheapest per GPU\n"]
+    if pd is not None:
+        df = pd.DataFrame(records)
+        cheapest = df.sort_values("usd_per_hour").groupby("gpu", as_index=False).first()
+        section.append(cheapest[["gpu", "usd_per_hour", "provider_id", "region", "sku"]].to_markdown(index=False))
+        section.append("")
+        return section
+
+    cheapest_map = {}
+    for row in records:
+        gpu = row.get("gpu")
+        if not gpu:
+            continue
+        current = cheapest_map.get(gpu)
+        if current is None or row.get("usd_per_hour", float("inf")) < current.get("usd_per_hour", float("inf")):
+            cheapest_map[gpu] = row
+    cheapest_rows = sorted(cheapest_map.values(), key=lambda r: r.get("usd_per_hour", float("inf")))
+    section.append(
+        _format_markdown_table(
+            cheapest_rows,
+            ["gpu", "usd_per_hour", "provider_id", "region", "sku"],
+        )
+    )
+    section.append("")
+    return section
+
+
+def _render_movers(previous: List[dict], current: List[dict]) -> str:
+    if pd is not None:
+        prev_df = pd.DataFrame(previous)
+        curr_df = pd.DataFrame(current)
+        movers = _compute_movers(prev_df, curr_df)
+        return movers.to_markdown(index=False) if not movers.empty else ""
+
+    prev_cheapest = _group_cheapest(previous)
+    curr_cheapest = _group_cheapest(current)
+    movers: List[dict] = []
+    for gpu, offer in curr_cheapest.items():
+        prev = prev_cheapest.get(gpu)
+        delta = None
+        prev_price = None
+        if prev is not None:
+            prev_price = prev.get("usd_per_hour")
+            if prev_price is not None:
+                delta = offer.get("usd_per_hour") - prev_price
+        movers.append(
+            {
+                "gpu": gpu,
+                "usd_per_hour": offer.get("usd_per_hour"),
+                "prev_usd_per_hour": prev_price,
+                "delta": delta if delta is not None else offer.get("usd_per_hour"),
+            }
+        )
+    movers = [m for m in movers if m["prev_usd_per_hour"] is not None]
+    movers.sort(key=lambda r: r.get("delta", float("inf")))
+    top = movers[:10]
+    return _format_markdown_table(top, ["gpu", "usd_per_hour", "prev_usd_per_hour", "delta"]) if top else ""
+
+
+def _render_provider_coverage(records: List[dict]) -> str:
+    if pd is not None:
+        df = pd.DataFrame(records)
+        coverage = df.groupby("provider_id").size().reset_index(name="offers")
+        return coverage.to_markdown(index=False)
+
+    counts = defaultdict(int)
+    for row in records:
+        provider = row.get("provider_id")
+        if provider:
+            counts[provider] += 1
+    rows = [{"provider_id": provider, "offers": counts[provider]} for provider in sorted(counts)]
+    return _format_markdown_table(rows, ["provider_id", "offers"])
+
+
+def _compute_movers(prev_df, current_df):
     prev_cheapest = prev_df.sort_values("usd_per_hour").groupby("gpu", as_index=False).first()
     curr_cheapest = current_df.sort_values("usd_per_hour").groupby("gpu", as_index=False).first()
     merged = curr_cheapest.merge(prev_cheapest[["gpu", "usd_per_hour"]], on="gpu", how="left", suffixes=("_current", "_previous"))
@@ -60,6 +133,42 @@ def _compute_movers(prev_df: pd.DataFrame, current_df: pd.DataFrame) -> pd.DataF
     merged = merged.sort_values("delta")
     merged = merged.rename(columns={"usd_per_hour_current": "usd_per_hour", "usd_per_hour_previous": "prev_usd_per_hour"})
     return merged[["gpu", "usd_per_hour", "prev_usd_per_hour", "delta"]].head(10)
+
+
+def _group_cheapest(records: List[dict]) -> Dict[str, dict]:
+    grouped: Dict[str, dict] = {}
+    for row in records:
+        gpu = row.get("gpu")
+        if not gpu:
+            continue
+        existing = grouped.get(gpu)
+        price = row.get("usd_per_hour")
+        if price is None:
+            continue
+        if existing is None or price < existing.get("usd_per_hour", float("inf")):
+            grouped[gpu] = row
+    return grouped
+
+
+def _format_markdown_table(rows: List[dict], columns: List[str]) -> str:
+    if not rows:
+        return ""
+    header = "| " + " | ".join(columns) + " |"
+    separator = "| " + " | ".join(["---"] * len(columns)) + " |"
+    lines = [header, separator]
+    for row in rows:
+        values = []
+        for column in columns:
+            value = row.get(column, "")
+            if isinstance(value, float):
+                value = f"{value:.4f}"
+            elif value is None:
+                value = ""
+            else:
+                value = str(value)
+            values.append(value)
+        lines.append("| " + " | ".join(values) + " |")
+    return "\n".join(lines)
 
 
 def _load_previous_snapshot(history_path: Optional[Path]) -> Optional[List[dict]]:

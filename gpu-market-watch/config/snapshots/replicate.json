@@ -1,0 +1,16 @@
+{
+  "prices": [
+    {
+      "gpu": "NVIDIA A40",
+      "usd_per_minute": 0.08,
+      "hardware": "a40",
+      "region": "us"
+    },
+    {
+      "gpu": "NVIDIA T4",
+      "usd_per_hour": 0.35,
+      "hardware": "t4",
+      "region": "us"
+    }
+  ]
+}

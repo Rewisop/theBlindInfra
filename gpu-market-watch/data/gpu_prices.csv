@@ -1,0 +1,9 @@
+content_hash,fetched_at,generated_at,gpu,on_demand,provider_id,region,sku,source_url,spot,usd_per_hour
+cb9a6bc291b77ea2b37fdb90318e0011a7a14c2c177b52e038b1337bce79fe1b,2025-10-17T14:47:37.214939+00:00,2025-10-17T14:47:37.214939+00:00,A100 80GB,True,lambda,us-west-1,gpu_1x_a100_80g,https://cloud.lambdalabs.com/api/v1/instance-types,False,3.2
+8c2720ca41127bb8f5a68a9795f92d51fccf50509c90b1a6404dd6ba70a821ed,2025-10-17T14:47:37.214939+00:00,2025-10-17T14:47:37.214939+00:00,RTX 6000 Ada,True,lambda,us-east-1,gpu_1x_rtx_6000_ada,https://cloud.lambdalabs.com/api/v1/instance-types,False,2.1
+6183b5d16ae4d67609fd35fc40a1d70136e2845f6a577e785183785185e66c6a,2025-10-17T14:47:37.214939+00:00,2025-10-17T14:47:37.214939+00:00,NVIDIA A40,True,replicate,us,a40,https://api.replicate.com/v1/pricing,False,4.8
+f988ce5ac6f7903306277305b506b89b659eb6d52963f1db649285aaa803426e,2025-10-17T14:47:37.214939+00:00,2025-10-17T14:47:37.214939+00:00,NVIDIA T4,True,replicate,us,t4,https://api.replicate.com/v1/pricing,False,0.35
+4a9a2b6aed30334e128bbe1b28166e69e7f5911908ef654389b554d73e945356,2025-10-17T14:47:37.214939+00:00,2025-10-17T14:47:37.214939+00:00,A100 80GB,True,runpod,eu-central,RUNPOD-A100-80G,https://api.runpod.io/pricing,True,3.5
+de06e8a48f4e2c43a00b21951dc4d16e53e6a4c6c93ec1b58c17f780eeb4f4e0,2025-10-17T14:47:37.214939+00:00,2025-10-17T14:47:37.214939+00:00,RTX 4090,True,runpod,us-west,RUNPOD-RTX4090-1,https://api.runpod.io/pricing,False,1.25
+8e50012cb843f978172e4950d7a88fdbca96222ee2400584c479d365dfe758fd,2025-10-17T14:47:37.214939+00:00,2025-10-17T14:47:37.214939+00:00,A40,False,vast_ai,eu-west,vast-2,https://api.vast.ai/v0/bundles/public,True,0.95
+004472cb578569bf6e3307d13a6fae0ee8da77abb150405ec21f76230035c7c0,2025-10-17T14:47:37.214939+00:00,2025-10-17T14:47:37.214939+00:00,RTX 3090,False,vast_ai,us-east,vast-1,https://api.vast.ai/v0/bundles/public,True,0.48

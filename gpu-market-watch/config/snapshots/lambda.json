@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "gpu_type": "A100 80GB",
+      "price_cents_per_hour": 320,
+      "instance_type_name": "gpu_1x_a100_80g",
+      "region": "us-west-1"
+    },
+    {
+      "gpu_type": "RTX 6000 Ada",
+      "price_cents_per_hour": 210,
+      "instance_type_name": "gpu_1x_rtx_6000_ada",
+      "region": "us-east-1"
+    }
+  ]
+}

@@ -1,1 +1,106 @@
-[]
+[
+  {
+    "content_hash": "cb9a6bc291b77ea2b37fdb90318e0011a7a14c2c177b52e038b1337bce79fe1b",
+    "fetched_at": "2025-10-17T14:47:37.214939+00:00",
+    "generated_at": "2025-10-17T14:47:37.214939+00:00",
+    "gpu": "A100 80GB",
+    "on_demand": true,
+    "provider_id": "lambda",
+    "region": "us-west-1",
+    "sku": "gpu_1x_a100_80g",
+    "source_url": "https://cloud.lambdalabs.com/api/v1/instance-types",
+    "spot": false,
+    "usd_per_hour": 3.2
+  },
+  {
+    "content_hash": "8c2720ca41127bb8f5a68a9795f92d51fccf50509c90b1a6404dd6ba70a821ed",
+    "fetched_at": "2025-10-17T14:47:37.214939+00:00",
+    "generated_at": "2025-10-17T14:47:37.214939+00:00",
+    "gpu": "RTX 6000 Ada",
+    "on_demand": true,
+    "provider_id": "lambda",
+    "region": "us-east-1",
+    "sku": "gpu_1x_rtx_6000_ada",
+    "source_url": "https://cloud.lambdalabs.com/api/v1/instance-types",
+    "spot": false,
+    "usd_per_hour": 2.1
+  },
+  {
+    "content_hash": "6183b5d16ae4d67609fd35fc40a1d70136e2845f6a577e785183785185e66c6a",
+    "fetched_at": "2025-10-17T14:47:37.214939+00:00",
+    "generated_at": "2025-10-17T14:47:37.214939+00:00",
+    "gpu": "NVIDIA A40",
+    "on_demand": true,
+    "provider_id": "replicate",
+    "region": "us",
+    "sku": "a40",
+    "source_url": "https://api.replicate.com/v1/pricing",
+    "spot": false,
+    "usd_per_hour": 4.8
+  },
+  {
+    "content_hash": "f988ce5ac6f7903306277305b506b89b659eb6d52963f1db649285aaa803426e",
+    "fetched_at": "2025-10-17T14:47:37.214939+00:00",
+    "generated_at": "2025-10-17T14:47:37.214939+00:00",
+    "gpu": "NVIDIA T4",
+    "on_demand": true,
+    "provider_id": "replicate",
+    "region": "us",
+    "sku": "t4",
+    "source_url": "https://api.replicate.com/v1/pricing",
+    "spot": false,
+    "usd_per_hour": 0.35
+  },
+  {
+    "content_hash": "4a9a2b6aed30334e128bbe1b28166e69e7f5911908ef654389b554d73e945356",
+    "fetched_at": "2025-10-17T14:47:37.214939+00:00",
+    "generated_at": "2025-10-17T14:47:37.214939+00:00",
+    "gpu": "A100 80GB",
+    "on_demand": true,
+    "provider_id": "runpod",
+    "region": "eu-central",
+    "sku": "RUNPOD-A100-80G",
+    "source_url": "https://api.runpod.io/pricing",
+    "spot": true,
+    "usd_per_hour": 3.5
+  },
+  {
+    "content_hash": "de06e8a48f4e2c43a00b21951dc4d16e53e6a4c6c93ec1b58c17f780eeb4f4e0",
+    "fetched_at": "2025-10-17T14:47:37.214939+00:00",
+    "generated_at": "2025-10-17T14:47:37.214939+00:00",
+    "gpu": "RTX 4090",
+    "on_demand": true,
+    "provider_id": "runpod",
+    "region": "us-west",
+    "sku": "RUNPOD-RTX4090-1",
+    "source_url": "https://api.runpod.io/pricing",
+    "spot": false,
+    "usd_per_hour": 1.25
+  },
+  {
+    "content_hash": "8e50012cb843f978172e4950d7a88fdbca96222ee2400584c479d365dfe758fd",
+    "fetched_at": "2025-10-17T14:47:37.214939+00:00",
+    "generated_at": "2025-10-17T14:47:37.214939+00:00",
+    "gpu": "A40",
+    "on_demand": false,
+    "provider_id": "vast_ai",
+    "region": "eu-west",
+    "sku": "vast-2",
+    "source_url": "https://api.vast.ai/v0/bundles/public",
+    "spot": true,
+    "usd_per_hour": 0.95
+  },
+  {
+    "content_hash": "004472cb578569bf6e3307d13a6fae0ee8da77abb150405ec21f76230035c7c0",
+    "fetched_at": "2025-10-17T14:47:37.214939+00:00",
+    "generated_at": "2025-10-17T14:47:37.214939+00:00",
+    "gpu": "RTX 3090",
+    "on_demand": false,
+    "provider_id": "vast_ai",
+    "region": "us-east",
+    "sku": "vast-1",
+    "source_url": "https://api.vast.ai/v0/bundles/public",
+    "spot": true,
+    "usd_per_hour": 0.48
+  }
+]

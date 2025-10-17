@@ -1,0 +1,18 @@
+{
+  "data": [
+    {
+      "gpu": "RTX 4090",
+      "usd_per_hour": 1.25,
+      "instance_type": "RUNPOD-RTX4090-1",
+      "region": "us-west",
+      "spot": false
+    },
+    {
+      "gpu": "A100 80GB",
+      "usd_per_hour": 3.5,
+      "instance_type": "RUNPOD-A100-80G",
+      "region": "eu-central",
+      "spot": true
+    }
+  ]
+}
