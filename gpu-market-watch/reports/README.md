@@ -1,3 +1,6 @@
 # GPU Market Daily Report
 
-Data artifacts not yet generated. Run `python -m marketwatch.cli` to populate the latest snapshot.
+Generated at: `2025-10-17T14:03:41.306502`
+
+Total providers: **0**
+Total offers: **0**
