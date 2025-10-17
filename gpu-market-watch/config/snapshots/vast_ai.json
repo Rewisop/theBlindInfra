@@ -1,0 +1,18 @@
+{
+  "offers": [
+    {
+      "id": "vast-1",
+      "gpu_name": "RTX 3090",
+      "dph_total": 0.48,
+      "region": "us-east",
+      "spot": true
+    },
+    {
+      "id": "vast-2",
+      "gpu_type": "A40",
+      "price_per_gpu_hour": 0.95,
+      "geolocation": "eu-west",
+      "spot": true
+    }
+  ]
+}

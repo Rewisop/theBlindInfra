@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import List
 
 from ..schema import GpuPrice, validate_and_normalize
-from ..util import log, parse_float
+from ..util import load_json_snapshot, log, parse_float
 
 DEFAULT_ENDPOINT = "https://api.replicate.com/v1/pricing"
 
@@ -15,13 +15,17 @@ def fetch(session, cfg, now: datetime) -> List[GpuPrice]:
     headers = {}
     if token := cfg.extra.get("token"):
         headers["Authorization"] = f"Token {token}"
+    payload = None
     try:
         response = session.get(url, headers=headers)
         response.raise_for_status()
         payload = response.json()
     except Exception as exc:  # pragma: no cover - defensive
         log("WARN", f"replicate: failed to fetch pricing ({exc})")
-        return []
+        payload = load_json_snapshot(cfg.id)
+        if payload is None:
+            return []
+        log("INFO", "replicate: using bundled snapshot data")
 
     records = payload.get("prices") or payload.get("hardware") or []
     results: List[GpuPrice] = []

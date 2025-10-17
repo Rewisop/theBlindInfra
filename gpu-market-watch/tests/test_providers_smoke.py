@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from marketwatch.config import ProviderConfig
-from marketwatch.providers import runpod, vast_ai
+from marketwatch.providers import lambda_labs, replicate, runpod, vast_ai
 from marketwatch.schema import GpuPrice
 
 
@@ -24,6 +24,11 @@ class DummySession:
 
     def get(self, url, headers=None):
         return DummyResponse(self.data, self.text)
+
+
+class ErrorSession:
+    def get(self, url, headers=None):
+        raise RuntimeError("boom")
 
 
 def test_runpod_fetch_normalizes_records():
@@ -54,5 +59,29 @@ def test_vast_ai_fetch_handles_missing_fields():
     results = vast_ai.fetch(session, cfg, now)
     assert len(results) == 1
     assert results[0].spot is True
+
+
+def test_runpod_fetch_falls_back_to_snapshot():
+    now = datetime.now(tz=timezone.utc)
+    cfg = ProviderConfig(id="runpod", enabled=True, module="marketwatch.providers.runpod:fetch", extra={})
+    results = runpod.fetch(ErrorSession(), cfg, now)
+    assert len(results) >= 1
+    assert all(isinstance(result, GpuPrice) for result in results)
+
+
+def test_lambda_fetch_falls_back_to_snapshot():
+    now = datetime.now(tz=timezone.utc)
+    cfg = ProviderConfig(id="lambda", enabled=True, module="marketwatch.providers.lambda_labs:fetch", extra={})
+    results = lambda_labs.fetch(ErrorSession(), cfg, now)
+    assert len(results) >= 1
+    assert all(result.on_demand for result in results)
+
+
+def test_replicate_fetch_falls_back_to_snapshot():
+    now = datetime.now(tz=timezone.utc)
+    cfg = ProviderConfig(id="replicate", enabled=True, module="marketwatch.providers.replicate:fetch", extra={})
+    results = replicate.fetch(ErrorSession(), cfg, now)
+    assert len(results) >= 1
+    assert all(isinstance(result, GpuPrice) for result in results)
 
 

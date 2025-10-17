@@ -5,20 +5,24 @@ from datetime import datetime
 from typing import List
 
 from ..schema import GpuPrice, validate_and_normalize
-from ..util import log, parse_float
+from ..util import load_json_snapshot, log, parse_float
 
 DEFAULT_ENDPOINT = "https://cloud.lambdalabs.com/api/v1/instance-types"
 
 
 def fetch(session, cfg, now: datetime) -> List[GpuPrice]:
     url = cfg.extra.get("base_url", DEFAULT_ENDPOINT)
+    payload = None
     try:
         response = session.get(url)
         response.raise_for_status()
         payload = response.json()
     except Exception as exc:  # pragma: no cover - defensive
         log("WARN", f"lambda: failed to fetch pricing ({exc})")
-        return []
+        payload = load_json_snapshot(cfg.id)
+        if payload is None:
+            return []
+        log("INFO", "lambda: using bundled snapshot data")
 
     instances = payload.get("data") or payload.get("instance_types") or {}
     if isinstance(instances, dict):

@@ -1,7 +1,9 @@
 """Utility helpers for marketwatch."""
 from __future__ import annotations
 
+import csv
 import hashlib
+import io
 import json
 import os
 import tempfile
@@ -9,13 +11,29 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
-import pandas as pd
-import requests
-from dateutil import parser as date_parser
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+try:  # pragma: no cover - optional dependency
+    import pandas as pd  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    pd = None  # type: ignore[assignment]
 
-from .config import load_settings
+try:  # pragma: no cover - optional dependency
+    import requests  # type: ignore
+    from requests.adapters import HTTPAdapter  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    requests = None  # type: ignore[assignment]
+    HTTPAdapter = None  # type: ignore[assignment]
+
+try:  # pragma: no cover - optional dependency
+    from urllib3.util.retry import Retry  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    Retry = None  # type: ignore[assignment]
+
+try:  # pragma: no cover - optional dependency
+    from dateutil import parser as date_parser  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    date_parser = None  # type: ignore[assignment]
+
+from .config import load_settings, project_path
 
 
 LOG_LEVELS = {"DEBUG": 10, "INFO": 20, "WARN": 30, "ERROR": 40}
@@ -42,7 +60,12 @@ def parse_datetime(value: Any) -> datetime:
         if value.tzinfo is None:
             return value.replace(tzinfo=timezone.utc)
         return value.astimezone(timezone.utc)
-    return date_parser.parse(str(value)).astimezone(timezone.utc)
+    if date_parser is not None:
+        return date_parser.parse(str(value)).astimezone(timezone.utc)
+    parsed = datetime.fromisoformat(str(value))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def parse_money(value: Any) -> Optional[float]:
@@ -64,8 +87,23 @@ def parse_float(value: Any) -> Optional[float]:
         return None
 
 
-def make_session() -> requests.Session:
+class _OfflineSession:
+    def __init__(self, reason: str):
+        self.reason = reason
+        self.headers: Dict[str, str] = {}
+
+    def get(self, url: str, **kwargs):  # pragma: no cover - simple fallback
+        raise RuntimeError(self.reason)
+
+    def request(self, method: str, url: str, **kwargs):  # pragma: no cover - simple fallback
+        raise RuntimeError(self.reason)
+
+
+def make_session():
     settings = load_settings().http
+    if requests is None or HTTPAdapter is None or Retry is None:
+        return _OfflineSession("requests library unavailable")
+
     session = requests.Session()
     session.headers.update({"User-Agent": settings.user_agent})
     retry = Retry(
@@ -79,7 +117,7 @@ def make_session() -> requests.Session:
     adapter = HTTPAdapter(max_retries=retry)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
-    session.request = _wrap_request(session.request, settings.timeout_s)  # type: ignore
+    session.request = _wrap_request(session.request, settings.timeout_s)  # type: ignore[attr-defined]
     return session
 
 
@@ -118,8 +156,21 @@ def write_json_atomic(path: Path, obj: Any) -> bool:
 
 
 def write_csv_atomic(path: Path, rows: Iterable[Dict[str, Any]]) -> bool:
-    df = pd.DataFrame(list(rows))
-    payload = df.to_csv(index=False) if not df.empty else ""
+    data = list(rows)
+    if pd is not None:
+        df = pd.DataFrame(data)
+        payload = df.to_csv(index=False) if not df.empty else ""
+    else:
+        if not data:
+            payload = ""
+        else:
+            buffer = io.StringIO()
+            fieldnames = sorted({key for row in data for key in row.keys()})
+            writer = csv.DictWriter(buffer, fieldnames=fieldnames)
+            writer.writeheader()
+            for row in data:
+                writer.writerow(row)
+            payload = buffer.getvalue()
     return _write_atomic(path, payload.encode("utf-8"))
 
 
@@ -145,6 +196,34 @@ def _write_atomic(path: Path, payload: bytes) -> bool:
     return True
 
 
+def load_json_snapshot(provider_id: str) -> Optional[Any]:
+    """Load a bundled JSON snapshot for a provider.
+
+    Parameters
+    ----------
+    provider_id:
+        Identifier for the provider, used to locate ``config/snapshots/<id>.json``.
+
+    Returns
+    -------
+    Optional[Any]
+        Parsed JSON object if the snapshot exists, otherwise ``None``.
+    """
+
+    if not provider_id:
+        return None
+
+    snapshot_path = project_path("config", "snapshots", f"{provider_id}.json")
+    if not snapshot_path.exists():
+        return None
+    try:
+        with snapshot_path.open("r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception as exc:  # pragma: no cover - defensive
+        log("WARN", f"{provider_id}: failed to load bundled snapshot ({exc})")
+        return None
+
+
 __all__ = [
     "log",
     "iso_now",
@@ -159,4 +238,5 @@ __all__ = [
     "write_csv_atomic",
     "append_jsonl",
     "write_text_atomic",
+    "load_json_snapshot",
 ]
