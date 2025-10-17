@@ -55,7 +55,13 @@ def _render_cheapest_section(records: List[dict]) -> List[str]:
     if pd is not None:
         df = pd.DataFrame(records)
         cheapest = df.sort_values("usd_per_hour").groupby("gpu", as_index=False).first()
-        section.append(cheapest[["gpu", "usd_per_hour", "provider_id", "region", "sku"]].to_markdown(index=False))
+        section.append(
+            _dataframe_to_markdown(
+                cheapest,
+                columns=["gpu", "usd_per_hour", "provider_id", "region", "sku"],
+                index=False,
+            )
+        )
         section.append("")
         return section
 
@@ -83,7 +89,15 @@ def _render_movers(previous: List[dict], current: List[dict]) -> str:
         prev_df = pd.DataFrame(previous)
         curr_df = pd.DataFrame(current)
         movers = _compute_movers(prev_df, curr_df)
-        return movers.to_markdown(index=False) if not movers.empty else ""
+        return (
+            _dataframe_to_markdown(
+                movers,
+                columns=["gpu", "usd_per_hour", "prev_usd_per_hour", "delta"],
+                index=False,
+            )
+            if not movers.empty
+            else ""
+        )
 
     prev_cheapest = _group_cheapest(previous)
     curr_cheapest = _group_cheapest(current)
@@ -114,7 +128,7 @@ def _render_provider_coverage(records: List[dict]) -> str:
     if pd is not None:
         df = pd.DataFrame(records)
         coverage = df.groupby("provider_id").size().reset_index(name="offers")
-        return coverage.to_markdown(index=False)
+        return _dataframe_to_markdown(coverage, columns=["provider_id", "offers"], index=False)
 
     counts = defaultdict(int)
     for row in records:
@@ -169,6 +183,16 @@ def _format_markdown_table(rows: List[dict], columns: List[str]) -> str:
             values.append(value)
         lines.append("| " + " | ".join(values) + " |")
     return "\n".join(lines)
+
+
+def _dataframe_to_markdown(df, *, columns: Optional[List[str]] = None, index: bool = False) -> str:
+    subset = df if columns is None else df[columns]
+    try:
+        return subset.to_markdown(index=index)
+    except (ImportError, ModuleNotFoundError):
+        data_columns = list(subset.columns)
+        records = subset.to_dict("records")
+        return _format_markdown_table(records, data_columns)
 
 
 def _load_previous_snapshot(history_path: Optional[Path]) -> Optional[List[dict]]:
