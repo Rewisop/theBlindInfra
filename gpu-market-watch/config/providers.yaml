@@ -1,0 +1,22 @@
+providers:
+  - id: "huggingface_endpoints"
+    enabled: true
+    module: "marketwatch.providers.hf_endpoints:fetch"
+    notes: "Prefer official pricing JSON or docs API; otherwise skip rather than hard-scrape."
+  - id: "vast_ai"
+    enabled: true
+    module: "marketwatch.providers.vast_ai:fetch"
+    base_url: "https://api.vast.ai/v0/bundles/public"
+  - id: "runpod"
+    enabled: true
+    module: "marketwatch.providers.runpod:fetch"
+    base_url: "https://api.runpod.io/pricing"
+  - id: "lambda"
+    enabled: true
+    module: "marketwatch.providers.lambda_labs:fetch"
+  - id: "replicate"
+    enabled: true
+    module: "marketwatch.providers.replicate:fetch"
+  - id: "modal"
+    enabled: false
+    module: "marketwatch.providers.modal:fetch"

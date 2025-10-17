@@ -1,0 +1,8 @@
+http:
+  timeout_s: 30
+  max_retries: 2
+  backoff_s: 2
+  user_agent: "gpu-market-watch/1.0 (contact: email@example.com)"
+run:
+  write_history: true
+  fail_on_any_error: false

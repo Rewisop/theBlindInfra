@@ -1,0 +1,8 @@
+body { font-family: system-ui, sans-serif; margin: 2rem; background: #0f172a; color: #e2e8f0; }
+main { max-width: 1000px; margin: 0 auto; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+th, td { border: 1px solid #1e293b; padding: 0.5rem; }
+th { background: #1e293b; }
+input, select { padding: 0.5rem; margin-right: 1rem; }
+section { margin-bottom: 2rem; }
+.chart div { background: rgba(56, 189, 248, 0.4); }

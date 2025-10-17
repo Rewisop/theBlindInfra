@@ -1,0 +1,14 @@
+title: "GPU Market Watch"
+intro: |
+  This dashboard summarizes the latest GPU pricing data collected from public infrastructure providers.
+  Filter the table to explore offers and compare across vendors.
+sections:
+  - id: summary
+    heading: "Snapshot"
+    description: "Overall counts and min pricing per GPU family."
+  - id: table
+    heading: "Offers"
+    description: "Interactive table of normalized GPU prices."
+  - id: chart
+    heading: "Min $/hr by GPU"
+    description: "Bar chart showing the lowest observed price for each GPU family."

@@ -1,0 +1,10 @@
+requests
+pydantic>=2
+pyyaml
+tenacity
+beautifulsoup4
+lxml
+pandas
+python-dateutil
+tqdm
+jinja2
