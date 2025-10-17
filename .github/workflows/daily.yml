@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# Run all shell steps from the subfolder
+defaults:
+  run:
+    working-directory: gpu-market-watch
+
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -15,13 +20,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install deps
         run: pip install -r requirements.txt
+
       - name: Update datasets
         run: python -m marketwatch.cli
+
       - name: Commit if changed
         shell: bash
         run: |
