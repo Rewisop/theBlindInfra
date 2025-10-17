@@ -149,7 +149,7 @@ function renderTable(prices) {{
   <section>
     <h2>Offers</h2>
     <label>Filter GPU <input id="gpu-filter" placeholder="e.g. A100" /></label>
-    <label>Provider <select id="provider-filter"><option value="">All</option>${providers.map(p => `<option>${p}</option>`).join('')}</select></label>
+    <label>Provider <select id="provider-filter"><option value="">All</option>${{providers.map(p => `<option>${{p}}</option>`).join('')}}</select></label>
     <table>
       <thead><tr><th>GPU</th><th>USD/hr</th><th>Provider</th><th>Region</th><th>SKU</th></tr></thead>
       <tbody></tbody>
@@ -161,7 +161,7 @@ function renderTable(prices) {{
     const provider = document.getElementById('provider-filter').value;
     tbody.innerHTML = prices
       .filter(p => (!gpu || p.gpu.toLowerCase().includes(gpu)) && (!provider || p.provider_id === provider))
-      .map(p => `<tr><td>${p.gpu}</td><td>${p.usd_per_hour.toFixed(4)}</td><td>${p.provider_id}</td><td>${p.region || ''}</td><td>${p.sku || ''}</td></tr>`)
+      .map(p => `<tr><td>${{p.gpu}}</td><td>${{p.usd_per_hour.toFixed(4)}}</td><td>${{p.provider_id}}</td><td>${{p.region || ''}}</td><td>${{p.sku || ''}}</td></tr>`)
       .join('');
   }}
   document.getElementById('gpu-filter').addEventListener('input', applyFilters);
