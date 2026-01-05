@@ -1,5 +1,5 @@
 async function loadData() {
-  const response = await fetch('../data/gpu_prices.json?_=1767505356.219357');
+  const response = await fetch('../data/gpu_prices.json?_=1767592236.898931');
   const data = await response.json();
   return data;
 }
